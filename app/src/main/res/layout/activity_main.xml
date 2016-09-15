@@ -16,19 +16,37 @@
         android:layout_height="wrap_content"
         android:text="Hello World!"/>
 
-    <Button
-        android:layout_width="wrap_content"
+    <TextView
+        android:id="@+id/volumeModes"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_alignParentStart="true"
-        android:onClick="onShout"
-        android:text="Twist n' shout!"/>
+        android:layout_below="@id/ringerMode"
+        android:fontFamily="monospace"/>
+
+    <View
+        android:id="@+id/centrePoint"
+        android:layout_width="30dp"
+        android:layout_height="1dp"
+        android:layout_centerInParent="true"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
         android:layout_centerVertical="true"
+        android:layout_toStartOf="@id/centrePoint"
+        android:onClick="onShout"
+        android:text="@string/twist_n_shout_button_text"
+        android:textAllCaps="false"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@id/centrePoint"
+        android:maxLength="40"
         android:onClick="onShutIt"
-        android:text="Shut it, darling!"/>
+        android:text="@string/shut_it_darling_button_text"
+        android:textAllCaps="false"/>
 </RelativeLayout>

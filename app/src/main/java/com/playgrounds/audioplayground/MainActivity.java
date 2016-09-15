@@ -1,15 +1,14 @@
 package com.playgrounds.audioplayground;
 
 import android.media.AudioManager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -64,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 AudioManager audioService = (AudioManager) getSystemService(AUDIO_SERVICE);
                 TextView ringerStatus = (TextView)findViewById(R.id.ringerMode);
+                TextView volumes = (TextView) findViewById(R.id.volumeModes);
                 int ringerMode = audioService.getRingerMode();
                 String ringerState = "";
                 if ((ringerMode & AudioManager.RINGER_MODE_NORMAL) != 0) {
@@ -81,6 +81,23 @@ public class MainActivity extends AppCompatActivity {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("hh:mm:ss", Locale.getDefault());
                 String date = dateFormat.format(new Date());
                 ringerStatus.setText(String.format(Locale.getDefault(), "Time: %s Ringer: %s Mode %s", date, ringerState, audioMode));
+                StreamDesc[] streams = new StreamDesc[]{
+                        new StreamDesc(AudioManager.STREAM_ALARM, "ALARM"),
+                        new StreamDesc(AudioManager.STREAM_DTMF, "DTMF"),
+                        new StreamDesc(AudioManager.STREAM_MUSIC, "MUSIC"),
+                        new StreamDesc(AudioManager.STREAM_NOTIFICATION, "NOTIFICATION"),
+                        new StreamDesc(AudioManager.STREAM_RING, "RING"),
+                        new StreamDesc(AudioManager.STREAM_SYSTEM, "SYSTEM"),
+                        new StreamDesc(AudioManager.STREAM_VOICE_CALL, "VOICE_CALL")
+                };
+
+                StringBuilder builder = new StringBuilder();
+                for (StreamDesc stream : streams) {
+                    builder.append(String.format(Locale.getDefault(), "%-15s: %d/%d\n", stream.streamName, audioService.getStreamVolume(stream.streamId), audioService.getStreamMaxVolume(stream.streamId)));
+                }
+
+                volumes.setText(builder.toString());
+                
             }
         });
     }
@@ -107,6 +124,16 @@ public class MainActivity extends AppCompatActivity {
         AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         for (int streamType: ALL_STREAMS) {
             audioManager.setStreamVolume(streamType, 0, AudioManager.FLAG_VIBRATE);
+        }
+    }
+
+    private class StreamDesc {
+        private final int streamId;
+        private final String streamName;
+
+        public StreamDesc(int streamId, String streamName) {
+            this.streamId = streamId;
+            this.streamName = streamName;
         }
     }
 }
