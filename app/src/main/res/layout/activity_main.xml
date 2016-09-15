@@ -32,8 +32,8 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
-        android:layout_centerVertical="true"
         android:layout_toStartOf="@id/centrePoint"
         android:onClick="onShout"
         android:text="@string/twist_n_shout_button_text"
@@ -42,8 +42,8 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
         android:layout_toEndOf="@id/centrePoint"
         android:maxLength="40"
         android:onClick="onShutIt"
