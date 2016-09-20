@@ -1,9 +1,20 @@
 package com.playgrounds.audioplayground;
 
+import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.media.AudioManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
@@ -15,6 +26,15 @@ import java.util.TimerTask;
 public class MainActivity extends AppCompatActivity {
 
     public static final int[] ALL_STREAMS = new int[]{AudioManager.STREAM_ALARM, AudioManager.STREAM_DTMF, AudioManager.STREAM_MUSIC, AudioManager.STREAM_NOTIFICATION, AudioManager.STREAM_RING, AudioManager.STREAM_SYSTEM, AudioManager.STREAM_VOICE_CALL};
+    private static final String LOG_TAG = "SoundTestAct";
+    private final String[] modes = {
+            "MODE_CURRENT",
+            "MODE_INVALID",
+            "MODE_IN_CALL",
+            "MODE_IN_COMMUNICATION",
+            "MODE_NORMAL",
+            "MODE_RINGTONE"
+    };
     private Timer timer;
     private boolean isPaused = true;
 
@@ -23,6 +43,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         updateRingerState();
+        Spinner spinner = (Spinner) findViewById(R.id.audioModeSpinner);
+        final ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_item);
+
+        adapter.addAll(modes);
+        spinner.setOnItemSelectedListener(new ModeSpinnerListener(this, modes));
+
+        spinner.setAdapter(adapter);
     }
 
     @Override
@@ -97,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 volumes.setText(builder.toString());
-                
+
             }
         });
     }
@@ -127,6 +154,44 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void onSendPing(View view) {
+        android.support.v4.app.NotificationCompat.Builder notificationBuilder = new android.support.v4.app.NotificationCompat.Builder(this)
+                .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                .setContentTitle("Notification title")
+                .setContentText("Notification context")
+                .setAutoCancel(true)
+                .setOngoing(false)
+                .setTicker("Notification ticker")
+                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        Integer notificationId = 2;
+        Log.d(LOG_TAG, "Requesting notification ");
+        final Notification notification = notificationBuilder.build();
+        mixinLedLights(notification, 0xFF00FF, 5000, 100);
+        notificationManager.notify("Notification tag", notificationId, notification);
+    }
+
+    public void onPlaySound(View view) {
+        final Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        // Don't try this at home - checking threading
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final Ringtone ringtone = RingtoneManager.getRingtone(MainActivity.this, uri);
+                ringtone.play();
+            }
+        }).start();
+    }
+
+    public void mixinLedLights(Notification notification, int colourARGB, int offMs, int onMs) {
+        notification.ledARGB = colourARGB;
+        notification.ledOffMS = offMs;
+        notification.ledOnMS = onMs;
+        notification.flags |= Notification.FLAG_SHOW_LIGHTS;
+    }
+
     private class StreamDesc {
         private final int streamId;
         private final String streamName;
@@ -134,6 +199,31 @@ public class MainActivity extends AppCompatActivity {
         public StreamDesc(int streamId, String streamName) {
             this.streamId = streamId;
             this.streamName = streamName;
+        }
+    }
+
+    private class ModeSpinnerListener implements AdapterView.OnItemSelectedListener {
+        private final Activity activity;
+        private final String[] modes;
+
+        public ModeSpinnerListener(Activity activity, String[] modes) {
+            this.activity = activity;
+            this.modes = modes;
+        }
+
+        @Override
+        public void onItemSelected(AdapterView<?> adapterView, View view, int index, long id) {
+            try {
+                int mode = AudioManager.class.getField(modes[index]).getInt(AudioManager.class);
+                ((AudioManager) activity.getSystemService(Context.AUDIO_SERVICE)).setMode(mode);
+            } catch (NoSuchFieldException | IllegalAccessException ignored) {
+                ignored.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> adapterView) {
+
         }
     }
 }

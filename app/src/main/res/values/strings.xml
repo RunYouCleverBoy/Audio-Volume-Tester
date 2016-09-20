@@ -2,4 +2,6 @@
     <string name="app_name">Audio Playground</string>
     <string name="twist_n_shout_button_text">Twist n\' shout!</string>
     <string name="shut_it_darling_button_text">Shut it, darling!</string>
+    <string name="send_a_ping">Send a ping</string>
+    <string name="play_a_sound">Play a sound</string>
 </resources>
