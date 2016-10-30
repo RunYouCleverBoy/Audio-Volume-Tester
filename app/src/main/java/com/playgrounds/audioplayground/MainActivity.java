@@ -5,6 +5,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -15,7 +16,9 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -37,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     };
     private Timer timer;
     private boolean isPaused = true;
+    private Switch lowLevelSwitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
         spinner.setOnItemSelectedListener(new ModeSpinnerListener(this, modes));
 
         spinner.setAdapter(adapter);
+        lowLevelSwitch = (Switch) findViewById(R.id.lowLevelSwitch);
     }
 
     @Override
@@ -179,10 +184,37 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final Ringtone ringtone = RingtoneManager.getRingtone(MainActivity.this, uri);
-                ringtone.play();
+                if (lowLevelSwitch.isChecked()) {
+                    startMediaPlayerWithUri(uri);
+                } else {
+                    final Ringtone ringtone = RingtoneManager.getRingtone(MainActivity.this, uri);
+                    ringtone.play();
+                }
             }
         }).start();
+    }
+
+    private void startMediaPlayerWithUri(Uri uri) {
+        try {
+            final MediaPlayer mediaPlayer = new MediaPlayer();
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_NOTIFICATION);
+            mediaPlayer.setDataSource(getApplicationContext(), uri);
+            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    mp.release();
+                }
+            });
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+        } catch (Exception ignored) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this, "Failed to start media player", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     public void mixinLedLights(Notification notification, int colourARGB, int offMs, int onMs) {
@@ -196,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
         private final int streamId;
         private final String streamName;
 
-        public StreamDesc(int streamId, String streamName) {
+        StreamDesc(int streamId, String streamName) {
             this.streamId = streamId;
             this.streamName = streamName;
         }
@@ -206,7 +238,7 @@ public class MainActivity extends AppCompatActivity {
         private final Activity activity;
         private final String[] modes;
 
-        public ModeSpinnerListener(Activity activity, String[] modes) {
+        ModeSpinnerListener(Activity activity, String[] modes) {
             this.activity = activity;
             this.modes = modes;
         }

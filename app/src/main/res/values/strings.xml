@@ -4,4 +4,7 @@
     <string name="shut_it_darling_button_text">Shut it, darling!</string>
     <string name="send_a_ping">Send a ping</string>
     <string name="play_a_sound">Play a sound</string>
+    <string name="mediaPlayer">MediaPlayer</string>
+    <string name="audServ">AudServ</string>
+    <string name="playbackMethod">player</string>
 </resources>
